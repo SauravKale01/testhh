@@ -8,6 +8,7 @@ API_ID = 19099900
 API_HASH = "2b445de78e5baf012a0793e60bd4fbf5"
 BOT_TOKEN = "6390766852:AAHAXsP3NHPX2NbnRaFDZA9ZH1h6FyNH1K4"
 MONGODB_URI = "mongodb+srv://sonu55:sonu55@cluster0.vqztrvk.mongodb.net/?retryWrites=true&w=majority"
+ADMIN_USER_ID = '6198858059'
 
 app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
@@ -91,13 +92,13 @@ async def clear_history(_: Client, message: Message):
     else:
         await message.reply("Chat history is already empty.")
 
-@app.on_message(filters.command("broadcast") & filters.user("@SexyNano"))
+@app.on_message(filters.command("broadcast") & filters.user(ADMIN_USER_ID))
 async def broadcast(_: Client, message: Message):
     if len(message.command) < 2:
         return await message.reply("Please provide a message to broadcast.")
-    
+
     msg_to_broadcast = message.text.split(maxsplit=1)[1]
-    
+
     # Get all user IDs to broadcast the message
     user_ids = [str(user["_id"]) for user in user_profiles.find({}, {"_id": 1})]
 
