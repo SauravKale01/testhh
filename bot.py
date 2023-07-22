@@ -21,23 +21,8 @@ admins = [6198858059]  # Replace with actual user IDs of admins
 async def start_command(_: Client, message: Message):
     user_id = message.from_user.id
     await message.reply(
-        "Welcome! I am an AI-Powered Chatbot. "
-        "By using this bot, you consent to the collection and storage of your data.\n"
-        "Type /chat followed by your message to interact with me or use /help for more options."
+        "Welcome! I am an AI-Powered Chatbot. Type /chat followed by your message to interact with me or use /help for more options. "       
     )
-    # Prompt the user to choose anonymous usage
-    await message.reply("Would you like to use the bot anonymously? (Yes/No)")
-
-
-@app.on_message(filters.private & filters.regex(r"(?i)^yes$|^no$"))
-async def handle_anonymous_usage(_: Client, message: Message):
-    user_id = message.from_user.id
-    is_anonymous = message.text.lower() == "yes"
-    if is_anonymous:
-        # User opted for anonymous usage, so we don't need to store user data
-        conversation_history.pop(user_id, None)
-    await message.reply("You have chosen anonymous usage. Your data won't be stored.")
-
 
 @app.on_message(filters.command("help"))
 async def help_command(_: Client, message: Message):
@@ -48,6 +33,8 @@ async def help_command(_: Client, message: Message):
         "/chat - Chat with me. Usage: /chat your_message\n"
         "/history - Show chat history.\n"
         "/clear_history - Clear chat history.\n"
+        "/bing <keyword>\n"
+        "For example: /bing cats\n"
         "/delete_data - Request deletion of your data."
     )
     await message.reply(help_text)
@@ -112,7 +99,7 @@ async def gpt(_: Client, message: Message):
 API_URL = "https://sugoi-api.vercel.app/search"
 
 
-@app.on_message(filters.command("img"))
+@app.on_message(filters.command("bing"))
 async def bing_search(client: Client, message: Message):
     try:
         if len(message.command) == 1:
