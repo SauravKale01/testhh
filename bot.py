@@ -21,7 +21,7 @@ admins = [6198858059]  # Replace with actual user IDs of admins
 async def start_command(_: Client, message: Message):
     user_id = message.from_user.id
     await message.reply(
-        "Welcome! I am an AI-Powered Chatbot. Type /chat followed by your message to interact with me or use /help for more options. "       
+        "Welcome! I am an AI-Powered Chatbot. Use /help for more options. Made By : @SexyNano "       
     )
 
 @app.on_message(filters.command("help"))
