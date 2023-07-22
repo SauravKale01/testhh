@@ -96,6 +96,57 @@ async def gpt(_: Client, message: Message):
         except Exception as e:
             await txt.edit(f"**An error occurred: {str(e)}**")
 
+@app.on_message(filters.command("chat_bard"))
+async def bard(_: Client, message: Message):
+    txt = await message.reply("Typing.......")
+
+    if len(message.command) < 2:
+        return await txt.edit("Please provide a message too.")
+
+    query = message.text.split(maxsplit=1)[1]
+
+    # Retrieve conversation history for this user
+    chat_id = message.chat.id
+    if chat_id in conversation_history:
+        dialog_messages = conversation_history[chat_id]
+    else:
+        dialog_messages = []
+
+    url = "https://api.safone.me/bard"
+    payload = {
+        "text": query,
+        "conversation_id": chat_id,
+        "dialog_messages": dialog_messages,
+    }
+
+    try:
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        results = response.json()
+
+        if "message" in results:
+            bot_response = results["message"]
+
+            # Check if the response contains an image
+            if "image" in results.get("detail", {}):
+                image_url = results["detail"]["image"]
+                await app.send_photo(chat_id, image_url, caption=bot_response)
+            else:
+                await txt.edit(bot_response)
+
+            # Extract the bot response from the provided API response
+            bot_response = bot_response[0]['content'][0]
+
+            dialog_messages.append({"bot": bot_response, "user": query})
+            conversation_history[chat_id] = dialog_messages
+        else:
+            await txt.edit("**An error occurred. No response received from the API.**")
+    except requests.exceptions.RequestException as e:
+        await txt.edit(f"**An error occurred: {str(e)}**")
+    except Exception as e:
+        await txt.edit(f"**An error occurred: {str(e)}**")
+
+
 API_URL = "https://sugoi-api.vercel.app/search"
 
 
