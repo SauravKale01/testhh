@@ -9,15 +9,57 @@ BOT_TOKEN = "6390766852:AAHAXsP3NHPX2NbnRaFDZA9ZH1h6FyNH1K4"
 
 app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-
 # Dictionary to store the conversation history for each user
 conversation_history = {}
 
+# List of admin users who can perform sensitive commands
+admins = [6198858059]  # Replace with actual user IDs of admins
+
+
 @app.on_message(filters.command("start"))
 async def start_command(_: Client, message: Message):
+    user_id = message.from_user.id
     await message.reply(
-        "Welcome! I am an AI-Powered Chatbot. Type /chat followed by your message to chat with me!"
+        "Welcome! I am an AI-Powered Chatbot. "
+        "By using this bot, you consent to the collection and storage of your data.\n"
+        "Type /chat followed by your message to interact with me or use /help for more options."
     )
+    # Prompt the user to choose anonymous usage
+    await message.reply("Would you like to use the bot anonymously? (Yes/No)")
+
+
+@app.on_message(filters.private & filters.regex(r"(?i)^yes$|^no$"))
+async def handle_anonymous_usage(_: Client, message: Message):
+    user_id = message.from_user.id
+    is_anonymous = message.text.lower() == "yes"
+    if is_anonymous:
+        # User opted for anonymous usage, so we don't need to store user data
+        conversation_history.pop(user_id, None)
+    await message.reply("You have chosen anonymous usage. Your data won't be stored.")
+
+
+@app.on_message(filters.command("help"))
+async def help_command(_: Client, message: Message):
+    help_text = (
+        "I am an AI-powered Chatbot bot. Here are the available commands:\n"
+        "/start - Start the bot and provide data consent.\n"
+        "/help - Show this help message.\n"
+        "/chat - Chat with me. Usage: /chat your_message\n"
+        "/history - Show chat history.\n"
+        "/clear_history - Clear chat history.\n"
+        "/delete_data - Request deletion of your data."
+    )
+    await message.reply(help_text)
+
+
+@app.on_message(filters.command("delete_data"))
+async def delete_data(_: Client, message: Message):
+    user_id = message.from_user.id
+    if user_id in conversation_history:
+        conversation_history.pop(user_id)
+        await message.reply("Your data has been deleted.")
+    else:
+        await message.reply("Your data is already deleted or was not stored.")
 
 @app.on_message(filters.command("chat"))
 async def gpt(_: Client, message: Message):
