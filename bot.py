@@ -67,39 +67,24 @@ async def gpt(_: Client, message: Message):
             await txt.edit(f"**An HTTP error occurred: {str(e)}**")
         except Exception as e:
             await txt.edit(f"**An error occurred: {str(e)}**")
+@app.on_message(filters.command("history"))
+async def show_history(_: Client, message: Message):
+    chat_id = message.chat.id
+    if chat_id in conversation_history:
+        history = conversation_history[chat_id]
+        msg = "\n".join(f"User: {item['user']}\nBot: {item['bot']}\n" for item in history)
+        await message.reply(f"Chat History:\n{msg}")
+    else:
+        await message.reply("Chat history is empty.")
 
-@app.on_message(filters.command("imagine"))
-async def imagine(_: Client, message: Message):
-    txt = await message.reply("Generating image...")
-
-    if len(message.command) < 2:
-        return await txt.edit("Please provide a text to generate an image.")
-
-    text = message.text.split(maxsplit=1)[1]
-
-    url = "https://api.safone.me/imagine"
-    payload = {"text": text}
-
-    async with httpx.AsyncClient(timeout=20) as client:
-        try:
-            response = await client.post(
-                url, json=payload, headers={"Content-Type": "application/json"}
-            )
-            response.raise_for_status()
-            results = response.json()
-
-            # Check if the API response contains the 'image' key
-            if "image" in results:
-                image_url = results["image"]
-
-                await txt.delete()
-                await message.reply_photo(image_url)
-            else:
-                await txt.edit("**An error occurred. No image received from the API.**")
-        except httpx.HTTPError as e:
-            await txt.edit(f"**An HTTP error occurred: {str(e)}**")
-        except Exception as e:
-            await txt.edit(f"**An error occurred: {str(e)}**")
+@app.on_message(filters.command("clear_history"))
+async def clear_history(_: Client, message: Message):
+    chat_id = message.chat.id
+    if chat_id in conversation_history:
+        conversation_history.pop(chat_id)
+        await message.reply("Chat history cleared.")
+    else:
+        await message.reply("Chat history is already empty.")
 
 # Run the bot
 app.run()
