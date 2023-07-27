@@ -155,12 +155,13 @@ async def info_command(_: Client, message: Message):
         status = chat_member.status
         status_text = f"Status in the group: {status}"
 
-        bot_info = (
-            f"First Name: {first_name}\n"
-            f"Last Name: {last_name}\n"
-            f"User ID: {user_id}\n"
-            f"Username: {username}\n"
-        (
+       bot_info = (
+    f"First Name: {first_name}\n"
+    f"Last Name: {last_name}\n"
+    f"User ID: {user_id}\n"
+    f"Username: {username}\n"
+)  # Add the closing parenthesis here
+
             
     # Send the response message
     await message.reply_text(bot_info, disable_web_page_preview=True)
