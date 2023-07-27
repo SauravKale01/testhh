@@ -137,11 +137,11 @@ async def info_command(_: Client, message: Message):
     last_name = user.last_name if user.last_name else ""
     user_id = user.id
     username = user.username if user.username else "Not available"
-    
+
     # Get the profile picture of the user
     profile_image = user.photo.big_file_id if user.photo else None
     profile_image_url = None
-    
+
     if profile_image:
         photo = await app.download_media(profile_image)
         profile_image_url = f"Here is your profile picture:\n {photo}"
@@ -159,12 +159,12 @@ async def info_command(_: Client, message: Message):
             status_text += " (Group Member)"
         else:
             status_text += " (Not a Member)"
-    
-    bot_info = (
+
+        bot_info = (
             f"First Name: {first_name}\n"
             f"Last Name: {last_name}\n"
             f"User ID: {user_id}\n"
-            f"Username: {username}\n"         
+            f"Username: {username}\n"           
             f"{status_text}\n"
         )
     else:
@@ -172,17 +172,15 @@ async def info_command(_: Client, message: Message):
             f"First Name: {first_name}\n"
             f"Last Name: {last_name}\n"
             f"User ID: {user_id}\n"
-            f"Username: {username}\n"          
+            f"Username: {username}\n"      
             "Status information is only available in groups."
         )
-    
+
     # Send the response message
     await message.reply_text(bot_info, disable_web_page_preview=True)
     if profile_image_url:
         with io.BytesIO(profile_image_url.encode()) as bio_file:
             await message.reply_photo(bio_file)
-
-
 
 @app.on_message(filters.command("alive"))
 async def alive_command(_: Client, message: Message):
