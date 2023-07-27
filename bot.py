@@ -8,7 +8,8 @@ import pyrogram
 import sys
 from pyrogram import filters, Client, idle
 from io import BytesIO
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, Chat
+
 
 # Replace these with your actual values
 API_ID = 19099900
@@ -129,6 +130,7 @@ async def ping_pong(_: Client, message: Message):
     await msg.edit(f"{message_text}\n**Ping**: {ping_duration:.2f} ms\n**Uptime**: {uptime_string}")
 
 
+
 @app.on_message(filters.command("info"))
 async def info_command(_: Client, message: Message):
     # Get information about the user who sent the command
@@ -146,8 +148,9 @@ async def info_command(_: Client, message: Message):
         photo = await app.download_media(profile_image)
         profile_image_url = f"Here is your profile picture:\n {photo}"
 
-    # Get the status of the user in the group (if the message is in a group)
-    if message.chat.type in ["group", "supergroup"]:
+    # Check if the message is in a group or supergroup
+    if message.chat.type in [Chat.GROUP, Chat.SUPERGROUP]:
+        # Get the status of the user in the group
         chat_member = await app.get_chat_member(message.chat.id, user_id)
         status = chat_member.status
         status_text = f"Status in the group: {status}"
@@ -164,7 +167,7 @@ async def info_command(_: Client, message: Message):
             f"First Name: {first_name}\n"
             f"Last Name: {last_name}\n"
             f"User ID: {user_id}\n"
-            f"Username: {username}\n"           
+            f"Username: {username}\n"
             f"{status_text}\n"
         )
     else:
@@ -172,7 +175,7 @@ async def info_command(_: Client, message: Message):
             f"First Name: {first_name}\n"
             f"Last Name: {last_name}\n"
             f"User ID: {user_id}\n"
-            f"Username: {username}\n"      
+            f"Username: {username}\n"         
             "Status information is only available in groups."
         )
 
