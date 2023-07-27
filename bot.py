@@ -149,6 +149,7 @@ async def alive_command(_: Client, message: Message):
         f"👨‍💻 **Owner:** [{owner_username}](https://t.me/{owner_username})\n\n"
         f"🐍 **Python Version:** {python_version}\n\n"
         f"📦 **Pyrogram Version:** {pyrogram_version}\n\n"
+        f"🤖 **Bot version:** 1.0.0
         f"🏢 **Running on:** {platform.system()} {platform.release()}\n\n"
         f"⏱️ **Uptime:** {get_uptime()}"
     )
