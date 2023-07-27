@@ -23,6 +23,7 @@ app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 
 
+
 # Safone API endpoint for Bard
 BARD_API_ENDPOINT = "https://api.safone.me/bard"
 
@@ -57,8 +58,6 @@ async def bard_command(_: Client, message: Message):
             await message.reply_text("Failed to generate Bard response.")
     except Exception as e:
         await message.reply_text("An error occurred while processing the request.")
-
-
 
 
 
