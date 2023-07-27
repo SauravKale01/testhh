@@ -145,14 +145,36 @@ async def info_command(_: Client, message: Message):
     if profile_image:
         photo = await app.download_media(profile_image)
         profile_image_url = f"Here is your profile picture:\n {photo}"
+
+    # Get the status of the user in the group (if the message is in a group)
+    if message.chat.type in ["group", "supergroup"]:
+        chat_member = await app.get_chat_member(message.chat.id, user_id)
+        status = chat_member.status
+        status_text = f"Status in the group: {status}"
+
+        # Check if the user is an admin, owner, or member
+        if status == "creator":
+            status_text += " (Group Owner)"
+        elif status in ["administrator", "member"]:
+            status_text += " (Group Member)"
+        else:
+            status_text += " (Not a Member)"
     
-    # Prepare the response message
     bot_info = (
-        f"First Name: {first_name}\n"
-        f"Last Name: {last_name}\n"
-        f"User ID: {user_id}\n"
-        f"Username: {username}\n"
-    )
+            f"First Name: {first_name}\n"
+            f"Last Name: {last_name}\n"
+            f"User ID: {user_id}\n"
+            f"Username: {username}\n"         
+            f"{status_text}\n"
+        )
+    else:
+        bot_info = (
+            f"First Name: {first_name}\n"
+            f"Last Name: {last_name}\n"
+            f"User ID: {user_id}\n"
+            f"Username: {username}\n"          
+            "Status information is only available in groups."
+        )
     
     # Send the response message
     await message.reply_text(bot_info, disable_web_page_preview=True)
