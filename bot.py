@@ -152,6 +152,14 @@ async def info_command(_: Client, message: Message):
             f"🆔 User ID: {user_id}\n"
             f"📛 Username: {username}\n"
         )
+    else:
+        bot_info = (
+            f"👤 First Name: {first_name}\n"
+            f"👥 Last Name: {last_name}\n"
+            f"🆔 User ID: {user_id}\n"
+            f"📛 Username: {username}\n"
+            "📡 Status information."
+        )
 
     # Send the response message with fancy text and emojis
     await message.reply_text(bot_info, disable_web_page_preview=True)
