@@ -129,8 +129,6 @@ async def ping_pong(_: Client, message: Message):
     # Add the ping and uptime information to the reply
     await msg.edit(f"{message_text}\n**Ping**: {ping_duration:.2f} ms\n**Uptime**: {uptime_string}")
 
-
-
 @app.on_message(filters.command("info"))
 async def info_command(_: Client, message: Message):
     # Get information about the user who sent the command
@@ -146,24 +144,16 @@ async def info_command(_: Client, message: Message):
 
     if profile_image:
         photo = await app.download_media(profile_image)
-        profile_image_url = f"Here is your profile picture:\n {photo}"
+        profile_image_url = f"🖼️ Here is your profile picture:\n {photo}"
 
-    # Check if the message is in a group or supergroup
-    if message.chat.type in [ChatType.GROUP, ChatType.SUPERGROUP]:
-        # Get the status of the user in the group
-        chat_member = await app.get_chat_member(message.chat.id, user_id)
-        status = chat_member.status
-        status_text = f"Status in the group: {status}"
+        bot_info = (
+            f"👤 First Name: {first_name}\n"
+            f"👥 Last Name: {last_name}\n"
+            f"🆔 User ID: {user_id}\n"
+            f"📛 Username: {username}\n"
+        )
 
-       bot_info = (
-    f"First Name: {first_name}\n"
-    f"Last Name: {last_name}\n"
-    f"User ID: {user_id}\n"
-    f"Username: {username}\n"
-)  # Add the closing parenthesis here
-
-            
-    # Send the response message
+    # Send the response message with fancy text and emojis
     await message.reply_text(bot_info, disable_web_page_preview=True)
     if profile_image_url:
         with io.BytesIO(profile_image_url.encode()) as bio_file:
