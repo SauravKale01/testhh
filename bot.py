@@ -8,7 +8,7 @@ import pyrogram
 import sys
 from pyrogram import filters, Client, idle
 from io import BytesIO
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, Chat
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ChatType
 
 
 # Replace these with your actual values
@@ -149,7 +149,7 @@ async def info_command(_: Client, message: Message):
         profile_image_url = f"Here is your profile picture:\n {photo}"
 
     # Check if the message is in a group or supergroup
-    if message.chat.type in [Chat.GROUP, Chat.SUPERGROUP]:
+    if message.chat.type in [ChatType.GROUP, ChatType.SUPERGROUP]:
         # Get the status of the user in the group
         chat_member = await app.get_chat_member(message.chat.id, user_id)
         status = chat_member.status
