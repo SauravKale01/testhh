@@ -21,6 +21,53 @@ ADMIN = [6198858059]  # Replace with actual user IDs of admins
 
 app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
+
+
+# Safone API endpoint for Bard
+BARD_API_ENDPOINT = "https://api.safone.me/bard"
+
+@app.on_message(filters.command("bard"))
+async def bard_command(_: Client, message: Message):
+    # Extract the text after the command as the Bard input
+    command_args = message.text.split(" ", 1)
+    if len(command_args) < 2:
+        await message.reply_text("Please provide some text for Bard.")
+        return
+
+    input_text = command_args[1]
+
+    # Prepare the payload for the Bard API
+    payload = {
+        "message": input_text,
+        "conversation_id": str(message.chat.id),  # Use the chat ID as conversation_id
+        "response_id": str(message.message_id),  # Use the message ID as response_id
+        "choice_id": "1"  # Use "1" as the default choice_id (you can adjust this as needed)
+    }
+
+    # Make a POST request to the Safone Bard API
+    try:
+        headers = {"Content-Type": "application/json"}
+        response = requests.post(BARD_API_ENDPOINT, json=payload, headers=headers)
+        response_data = response.json()
+
+        if response_data.get("message"):
+            output_text = response_data["message"]
+            await message.reply_text(output_text)
+        else:
+            await message.reply_text("Failed to generate Bard response.")
+    except Exception as e:
+        await message.reply_text("An error occurred while processing the request.")
+
+
+
+
+
+
+
+
+
+
+
 # Dictionary to store the conversation history for each user
 conversation_history = {}
 
