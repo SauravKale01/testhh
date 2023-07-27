@@ -8,7 +8,7 @@ import pyrogram
 import sys
 from pyrogram import filters, Client, idle
 from io import BytesIO
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ChatType
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 
 # Replace these with your actual values
@@ -155,30 +155,13 @@ async def info_command(_: Client, message: Message):
         status = chat_member.status
         status_text = f"Status in the group: {status}"
 
-        # Check if the user is an admin, owner, or member
-        if status == "creator":
-            status_text += " (Group Owner)"
-        elif status in ["administrator", "member"]:
-            status_text += " (Group Member)"
-        else:
-            status_text += " (Not a Member)"
-
         bot_info = (
             f"First Name: {first_name}\n"
             f"Last Name: {last_name}\n"
             f"User ID: {user_id}\n"
             f"Username: {username}\n"
-            f"{status_text}\n"
-        )
-    else:
-        bot_info = (
-            f"First Name: {first_name}\n"
-            f"Last Name: {last_name}\n"
-            f"User ID: {user_id}\n"
-            f"Username: {username}\n"         
-            "Status information is only available in groups."
-        )
-
+        (
+            
     # Send the response message
     await message.reply_text(bot_info, disable_web_page_preview=True)
     if profile_image_url:
