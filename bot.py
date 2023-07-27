@@ -137,6 +137,9 @@ async def info_command(_: Client, message: Message):
     last_name = user.last_name if user.last_name else ""
     user_id = user.id
     username = user.username if user.username else "Not available"
+    
+    # Get the user's bio using get_user method
+    user = await app.get_users(user_id)
     bio = user.bio if user.bio else "No bio provided"
     
     # Get the profile picture of the user
