@@ -152,7 +152,6 @@ async def info_command(_: Client, message: Message):
         f"Last Name: {last_name}\n"
         f"User ID: {user_id}\n"
         f"Username: {username}\n"
-        f"Bio: {bio}\n"
     )
     
     # Send the response message
