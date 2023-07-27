@@ -1,57 +1,36 @@
-import requests
+import os
 import httpx
+import time
+import requests
+import platform
+import pyrogram
+import sys
 from pyrogram import filters, Client, idle
-from pyrogram.types import Message
+from io import BytesIO
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 # Replace these with your actual values
 API_ID = 19099900
 API_HASH = "2b445de78e5baf012a0793e60bd4fbf5"
-BOT_TOKEN = "6390766852:AAHAXsP3NHPX2NbnRaFDZA9ZH1h6FyNH1K4"
+BOT_TOKEN = "6206599982:AAENkopxhCmzexPq9pZB_gFZcVpOmDXwiNU"
+# List of admin users who can perform sensitive commands
+ADMIN = [6198858059]  # Replace with actual user IDs of admins
+
 
 app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 # Dictionary to store the conversation history for each user
 conversation_history = {}
 
-# List of admin users who can perform sensitive commands
-admins = [6198858059]  # Replace with actual user IDs of admins
-
-
 @app.on_message(filters.command("start"))
 async def start_command(_: Client, message: Message):
-    user_id = message.from_user.id
     await message.reply(
-        "Welcome! I am an AI-Powered Chatbot. Use /help for more options. Made By : @SexyNano "       
+        "Welcome! I am an AI-Powered Chatbot. Type /chat followed by your message to chat with me!\nMade With : @BotGeniusHub"
     )
-
-@app.on_message(filters.command("help"))
-async def help_command(_: Client, message: Message):
-    help_text = (
-        "I am an AI-powered Chatbot bot. Here are the available commands:\n"
-        "/start - Start the bot and provide data consent.\n"
-        "/help - Show this help message.\n"
-        "/chat - Chat with me. Usage: /chat your_message\n"
-        "/history - Show chat history.\n"
-        "/clear_history - Clear chat history.\n"
-        "/bing <keyword>\n"
-        "For example: /bing cats\n"
-        "/delete_data - Request deletion of your data."
-    )
-    await message.reply(help_text)
-
-
-@app.on_message(filters.command("delete_data"))
-async def delete_data(_: Client, message: Message):
-    user_id = message.from_user.id
-    if user_id in conversation_history:
-        conversation_history.pop(user_id)
-        await message.reply("Your data has been deleted.")
-    else:
-        await message.reply("Your data is already deleted or was not stored.")
 
 @app.on_message(filters.command("chat"))
 async def gpt(_: Client, message: Message):
-    txt = await message.reply("Typing.......")
+    txt = await message.reply("💬")
 
     if len(message.command) < 2:
         return await txt.edit("Please provide a message too.")
@@ -96,59 +75,7 @@ async def gpt(_: Client, message: Message):
         except Exception as e:
             await txt.edit(f"**An error occurred: {str(e)}**")
 
-@app.on_message(filters.command("chat_bard"))
-async def bard(_: Client, message: Message):
-    txt = await message.reply("Typing.......")
-
-    if len(message.command) < 2:
-        return await txt.edit("Please provide a message too.")
-
-    query = message.text.split(maxsplit=1)[1]
-
-    # Retrieve conversation history for this user
-    chat_id = message.chat.id
-    if chat_id in conversation_history:
-        dialog_messages = conversation_history[chat_id]
-    else:
-        dialog_messages = []
-
-    url = "https://api.safone.me/bard"
-    payload = {
-        "text": query,
-        "conversation_id": chat_id,
-        "dialog_messages": dialog_messages,
-    }
-
-    try:
-        response = requests.post(url, json=payload)
-        response.raise_for_status()
-        results = response.json()
-
-        if "message" in results:
-            bot_response = results["message"]
-
-            # Check if the response contains an image
-            if "image" in results.get("detail", {}):
-                image_url = results["detail"]["image"]
-                await app.send_photo(chat_id, image_url, caption=bot_response)
-            else:
-                await txt.edit(bot_response)
-
-            # Extract the bot response from the provided API response
-            bot_response = bot_response[0]['content'][0]
-
-            dialog_messages.append({"bot": bot_response, "user": query})
-            conversation_history[chat_id] = dialog_messages
-        else:
-            await txt.edit("**An error occurred. No response received from the API.**")
-    except requests.exceptions.RequestException as e:
-        await txt.edit(f"**An error occurred: {str(e)}**")
-    except Exception as e:
-        await txt.edit(f"**An error occurred: {str(e)}**")
-
-
 API_URL = "https://sugoi-api.vercel.app/search"
-
 
 @app.on_message(filters.command("bing"))
 async def bing_search(client: Client, message: Message):
@@ -179,24 +106,67 @@ async def bing_search(client: Client, message: Message):
     except Exception as e:
         await message.reply_text(f"An error occurred: {str(e)}")
 
-@app.on_message(filters.command("history"))
-async def show_history(_: Client, message: Message):
-    chat_id = message.chat.id
-    if chat_id in conversation_history:
-        history = conversation_history[chat_id]
-        msg = "\n".join(f"User: {item['user']}\nBot: {item['bot']}\n" for item in history)
-        await message.reply(f"Chat History:\n{msg}")
-    else:
-        await message.reply("Chat history is empty.")
 
-@app.on_message(filters.command("clear_history"))
-async def clear_history(_: Client, message: Message):
-    chat_id = message.chat.id
-    if chat_id in conversation_history:
-        conversation_history.pop(chat_id)
-        await message.reply("Chat history cleared.")
-    else:
-        await message.reply("Chat history is already empty.")
+
+# Record the bot's start time
+start_time = time.time()
+
+@app.on_message(filters.command("ping"))
+async def ping_pong(_: Client, message: Message):
+    # Calculate the bot's ping
+    start = time.time()
+    message_text = "Pong!🏓"
+    msg = await message.reply(message_text)
+    end = time.time()
+    ping_duration = (end - start) * 1000  # Convert to milliseconds
+
+    # Calculate bot uptime
+    uptime_seconds = int(time.time() - start_time)
+    uptime_string = time.strftime("%H:%M:%S", time.gmtime(uptime_seconds))
+
+    # Add the ping and uptime information to the reply
+    await msg.edit(f"{message_text}\n**Ping**: {ping_duration:.2f} ms\n**Uptime**: {uptime_string}")
+
+
+@app.on_message(filters.command("info"))
+async def info_command(_: Client, message: Message):
+    bot_info = (
+        "I am an AI-powered Chatbot bot. Created using Python and Pyrogram. \n\n"
+        "Version: 1.0.0\n\n"
+        "Purpose: To provide assistance and chat with users.\n\n"
+        "Creator: @SexyNano"
+    )
+    await message.reply(bot_info)
+
+@app.on_message(filters.command("alive"))
+async def alive_command(_: Client, message: Message):
+    owner_username = "SexyNano"  # Replace with the bot owner's username
+    python_version = platform.python_version()
+    pyrogram_version = pyrogram.__version__
+
+    bot_info = (
+        "🤖 **Bot Is Alive** 🤖\n\n"
+        f"👨‍💻 **Owner:** [{owner_username}](https://t.me/{owner_username})\n\n"
+        f"🐍 **Python Version:** {python_version}\n\n"
+        f"📦 **Pyrogram Version:** {pyrogram_version}\n\n"
+        f"🏢 **Running on:** {platform.system()} {platform.release()}\n\n"
+        f"⏱️ **Uptime:** {get_uptime()}"
+    )
+
+    # Add horizontal line
+    horizontal_line = "\n" + "=" * 30 + "\n"
+
+    await message.reply_text(horizontal_line + bot_info + horizontal_line)
+
+def get_uptime():
+    uptime_seconds = int(time.time() - start_time)
+    uptime_string = time.strftime("%H:%M:%S", time.gmtime(uptime_seconds))
+    return uptime_string
+
+
+
+
+print("Bot deployed successfully!")  # Add a log message for successful deployment
 
 # Run the bot
 app.run()
