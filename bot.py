@@ -1,4 +1,6 @@
-import io
+# Credits : @SexyNano 🥲 I don't need credits thanks
+
+
 import os
 import httpx
 import time
@@ -8,65 +10,14 @@ import pyrogram
 import sys
 from pyrogram import filters, Client, idle
 from io import BytesIO
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-
+from pyrogram.types import Message
 
 # Replace these with your actual values
 API_ID = 19099900
 API_HASH = "2b445de78e5baf012a0793e60bd4fbf5"
-BOT_TOKEN = "6206599982:AAENkopxhCmzexPq9pZB_gFZcVpOmDXwiNU"
-# List of admin users who can perform sensitive commands
-ADMIN = [6198858059]  # Replace with actual user IDs of admins
-
+BOT_TOKEN = "6206599982:AAFhXRwC0SnPCBK4WDwzdz7TbTsM2hccgZc"
 
 app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-
-
-
-
-# Safone API endpoint for Bard
-BARD_API_ENDPOINT = "https://api.safone.me/bard"
-
-@app.on_message(filters.command("bard"))
-async def bard_command(_, message: Message):
-    # Prompt the user for a question
-    await message.reply_text("Ask a question.")
-
-@app.on_message(filters.text & ~filters.command("bard"))
-async def handle_user_input(_, message: Message):
-    user_input = message.text.strip()
-    if user_input.lower() == "exit":
-        await message.reply_text("Goodbye!")
-        return
-
-    response = get_response_from_bard(user_input)
-    await message.reply_text(f"Bard AI: {response}")
-
-def get_response_from_bard(question):
-    # Prepare the payload for the Bard API
-    payload = {
-        "question": question,
-    }
-
-    # Set headers for the POST request
-    headers = {
-        "Content-Type": "application/json",
-    }
-
-    # Make a POST request to the Safone Bard API
-    response = requests.post(BARD_API_ENDPOINT, json=payload, headers=headers)
-    if response.status_code == 200:
-        data = response.json()
-        return data.get("response", "Error: Failed to get a response from Bard AI.")
-    else:
-        return "Error: Failed to get a response from Bard AI."
-
-
-
-
-
-
-
 
 # Dictionary to store the conversation history for each user
 conversation_history = {}
@@ -124,37 +75,43 @@ async def gpt(_: Client, message: Message):
         except Exception as e:
             await txt.edit(f"**An error occurred: {str(e)}**")
 
-API_URL = "https://sugoi-api.vercel.app/search"
 
-@app.on_message(filters.command("bing"))
-async def bing_search(client: Client, message: Message):
+BASE_URL = 'https://api.safone.me'
+
+def ask_bard(question):
+    endpoint = f"{BASE_URL}/bard"
+    headers = {'Content-Type': 'application/json'}
+    body = {'message': question}
+    
     try:
-        if len(message.command) == 1:
-            await message.reply_text("Please provide a keyword to search.")
-            return
-
-        keyword = " ".join(
-            message.command[1:]
-        )  # Assuming the keyword is passed as arguments
-        params = {"keyword": keyword}
-        response = requests.get(API_URL, params=params)
-
-        if response.status_code == 200:
-            results = response.json()
-            if not results:
-                await message.reply_text("No results found.")
+        response = requests.post(endpoint, json=body, headers=headers)
+        response_data = response.json()
+        
+        if response.ok:
+            choices = response_data.get('choices', [])
+            if choices:
+                return choices[0]['content'][0]
             else:
-                message_text = ""
-                for result in results[:7]:
-                    title = result.get("title", "")
-                    link = result.get("link", "")
-                    message_text += f"{title}\n{link}\n\n"
-                await message.reply_text(message_text.strip())
+                return "Error: No response content found."
         else:
-            await message.reply_text("Sorry, something went wrong with the search.")
-    except Exception as e:
-        await message.reply_text(f"An error occurred: {str(e)}")
+            print(f"Error: {response.status_code}, {response_data}")
+            return f"Error: {response.text}"
+    except requests.RequestException as e:
+        return f"Error occurred: {e}"
 
+# Command handler for the /ask command
+@app.on_message(filters.command("ask", prefixes="/"))
+async def ask_command_handler(client: Client, message: Message):
+    question = " ".join(message.command[1:])
+    if question:
+        # Show typing status to simulate processing
+        await message.reply_chat_action("typing")
+        time.sleep(2)  # Simulate processing time
+
+        response_content = ask_bard(question)
+        await message.reply(response_content)
+    else:
+        await message.reply("Please provide a question after the /ask command.")
 
 
 # Record the bot's start time
@@ -176,43 +133,16 @@ async def ping_pong(_: Client, message: Message):
     # Add the ping and uptime information to the reply
     await msg.edit(f"{message_text}\n**Ping**: {ping_duration:.2f} ms\n**Uptime**: {uptime_string}")
 
+
 @app.on_message(filters.command("info"))
 async def info_command(_: Client, message: Message):
-    # Get information about the user who sent the command
-    user = message.from_user
-    first_name = user.first_name
-    last_name = user.last_name if user.last_name else ""
-    user_id = user.id
-    username = user.username if user.username else "Not available"
-
-    # Get the profile picture of the user
-    profile_image = user.photo.big_file_id if user.photo else None
-    profile_image_url = None
-
-    if profile_image:
-        photo = await app.download_media(profile_image)
-        profile_image_url = f"🖼️ Here is your profile picture:\n {photo}"
-
-        bot_info = (
-            f"👤 First Name: {first_name}\n"
-            f"👥 Last Name: {last_name}\n"
-            f"🆔 User ID: {user_id}\n"
-            f"📛 Username: {username}\n"
-        )
-    else:
-        bot_info = (
-            f"👤 First Name: {first_name}\n"
-            f"👥 Last Name: {last_name}\n"
-            f"🆔 User ID: {user_id}\n"
-            f"📛 Username: {username}\n"
-            "📡 Status information."
-        )
-
-    # Send the response message with fancy text and emojis
-    await message.reply_text(bot_info, disable_web_page_preview=True)
-    if profile_image_url:
-        with io.BytesIO(profile_image_url.encode()) as bio_file:
-            await message.reply_photo(bio_file)
+    bot_info = (
+        "I am an AI-powered Chatbot bot. Created using Python and Pyrogram. \n\n"
+        "Version: 1.0.0\n\n"
+        "Purpose: To provide assistance and chat with users.\n\n"
+        "Creator: @SexyNano"
+    )
+    await message.reply(bot_info)
 
 @app.on_message(filters.command("alive"))
 async def alive_command(_: Client, message: Message):
@@ -225,7 +155,6 @@ async def alive_command(_: Client, message: Message):
         f"👨‍💻 **Owner:** [{owner_username}](https://t.me/{owner_username})\n\n"
         f"🐍 **Python Version:** {python_version}\n\n"
         f"📦 **Pyrogram Version:** {pyrogram_version}\n\n"
-        f"🤖 **Bot version:** 1.0.0\n\n"
         f"🏢 **Running on:** {platform.system()} {platform.release()}\n\n"
         f"⏱️ **Uptime:** {get_uptime()}"
     )
@@ -240,11 +169,10 @@ def get_uptime():
     uptime_string = time.strftime("%H:%M:%S", time.gmtime(uptime_seconds))
     return uptime_string
 
-
-
-
-print("Bot deployed successfully!")  # Add a log message for successful deployment
+print("Bot deployed successfully! Join @BotGeniusHub for more")  # Add a log message for successful deployment
 
 # Run the bot
 app.run()
 idle()
+
+# if you face any error contact me @SexyNano
