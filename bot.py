@@ -104,10 +104,6 @@ def ask_bard(question):
 async def ask_command_handler(client: Client, message: Message):
     question = " ".join(message.command[1:])
     if question:
-        # Show typing status to simulate processing
-        await message.reply_chat_action("typing")
-        time.sleep(2)  # Simulate processing time
-
         response_content = ask_bard(question)
         await message.reply(response_content)
     else:
