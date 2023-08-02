@@ -114,6 +114,7 @@ async def ask_command_handler(client: Client, message: Message):
         await message.reply("Please provide a question after the /ask command.")
 
 
+
 # Record the bot's start time
 start_time = time.time()
 
